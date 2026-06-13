@@ -1,0 +1,73 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../db');
+
+// @route   POST /api/requests
+// @desc    Create a new emergency blood request & trigger matching
+router.post('/', async (req, res) => {
+  const { requester_id, blood_group, units_required, urgency_level, target_hospital_id } = req.body;
+
+  try {
+    // 1. Create the Request
+    const requestResult = await db.query(
+      `INSERT INTO requests (requester_id, blood_group, units_required, urgency_level, target_hospital_id) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [requester_id, blood_group, units_required, urgency_level, target_hospital_id]
+    );
+    const newRequest = requestResult.rows[0];
+
+    // 2. Fetch the target hospital's location
+    const hospitalResult = await db.query('SELECT location, latitude, longitude FROM users WHERE id = $1', [target_hospital_id]);
+    if (hospitalResult.rows.length === 0) {
+       return res.status(400).json({ error: 'Target hospital not found.' });
+    }
+    const hospital = hospitalResult.rows[0];
+
+    // 3. The Smart Matching Engine (Geofencing using PostGIS ST_Distance)
+    // Find active donors with matching blood group within 10km (10000 meters) of the hospital
+    const matchedDonors = await db.query(
+      `SELECT u.id, u.name, u.mobile_number, 
+              ST_Distance(u.location, $1) as distance_meters
+       FROM users u
+       JOIN donors d ON u.id = d.user_id
+       WHERE u.role = 'donor' 
+       AND d.blood_group = $2 
+       AND d.is_available = TRUE
+       AND ST_DWithin(u.location, $1, 10000)
+       ORDER BY distance_meters ASC
+       LIMIT 50`,
+       [hospital.location, blood_group] // $1 is hospital location (GEOMETRY), $2 is blood group
+    );
+
+    res.status(201).json({ 
+      message: 'Emergency request broadcasted successfully.', 
+      request: newRequest,
+      matched_donors_count: matchedDonors.rows.length,
+      matched_donors: matchedDonors.rows 
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error processing request.' });
+  }
+});
+
+// @route   GET /api/requests/active
+// @desc    Get all active emergency requests
+router.get('/active', async (req, res) => {
+  try {
+    const activeRequests = await db.query(
+      `SELECT r.*, u.name as requester_name 
+       FROM requests r 
+       JOIN users u ON r.requester_id = u.id 
+       WHERE r.status = 'pending' 
+       ORDER BY r.created_at DESC`
+    );
+    res.json(activeRequests.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error fetching requests.' });
+  }
+});
+
+module.exports = router;

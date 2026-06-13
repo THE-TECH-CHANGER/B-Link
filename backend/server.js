@@ -1,7 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { Pool } = require('pg');
+const { initializeApp, cert } = require('firebase-admin/app');
+const serviceAccount = require('./firebase-service-account.json');
+
+// Initialize Firebase Admin
+initializeApp({
+  credential: cert(serviceAccount)
+});
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -10,32 +16,23 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Database connection
-// (Ensure you have a .env file with DATABASE_URL or set it in your environment)
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+// Import Routes
+const authRoutes = require('./routes/auth');
+const requestRoutes = require('./routes/requests');
+
+// Mount Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/requests', requestRoutes);
 
 // Basic route to check if server is running
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'BloodLink Backend is running' });
 });
 
-// Placeholder for Request creation route
-app.post('/api/requests', async (req, res) => {
-  try {
-    const { bloodGroup, units, location, urgency } = req.body;
-    // In a real scenario, we'd insert into the database and trigger the matching engine
-    // const newRequest = await pool.query('INSERT INTO requests ... RETURNING *');
-    
-    res.status(201).json({
-      message: 'Emergency request received',
-      data: { bloodGroup, units, urgency }
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Server error' });
-  }
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 app.listen(port, () => {
