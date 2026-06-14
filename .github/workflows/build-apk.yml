@@ -25,6 +25,8 @@ jobs:
           cd apps/web
           npm install @capacitor/core
           npm install -D @capacitor/cli @capacitor/android
+          mkdir -p out
+          echo "{}" > out/index.html
           npx cap init "B-Link" "com.thetechchanger.blink" --web-dir out
           
       - name: Configure Capacitor to use Live URL
