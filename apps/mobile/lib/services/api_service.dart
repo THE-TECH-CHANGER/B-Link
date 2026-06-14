@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   // Use 10.0.2.2 to connect to localhost from an Android Emulator
   // 192.168.1.7 is your PC's IP address on the local WiFi/Ethernet
-  static const String baseUrl = 'http://192.168.1.7:5000/api';
+  static const String baseUrl = 'https://bloodlink-backend-vn4k.onrender.com/api';
   
   static String? _authToken;
 
@@ -12,7 +12,7 @@ class ApiService {
 
   static String getFullImageUrl(String path) {
     if (path.startsWith('http')) return path;
-    return 'http://192.168.1.7:5000$path';
+    return 'https://bloodlink-backend-vn4k.onrender.com$path';
   }
 
   static void setAuthToken(String token) {
