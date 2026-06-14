@@ -21,9 +21,12 @@ router.post('/register', async (req, res) => {
     // 2. Insert into specific role table
     if (role === 'donor') {
       if (!blood_group) return res.status(400).json({ error: 'Blood group required for donors.' });
+      
+      const { last_donation_date } = req.body;
+      
       await db.query(
-        `INSERT INTO donors (user_id, blood_group) VALUES ($1, $2)`,
-        [user.id, blood_group]
+        `INSERT INTO donors (user_id, blood_group, last_donation_date) VALUES ($1, $2, $3)`,
+        [user.id, blood_group, last_donation_date || null]
       );
     }
     // Add logic for 'hospital', 'blood_bank' later if needed

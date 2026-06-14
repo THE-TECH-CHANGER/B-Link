@@ -28,7 +28,9 @@ router.get('/profile', verifyFirebaseToken, async (req, res) => {
     let userResult;
     if (baseNumber) {
       userResult = await db.query(
-        `SELECT u.id, u.name, u.mobile_number, u.profile_picture, u.role, d.blood_group, d.is_available, d.last_donation_date 
+        `SELECT u.id, u.name, u.mobile_number, u.profile_picture, u.role, d.blood_group, 
+           (d.is_available AND (d.last_donation_date IS NULL OR d.last_donation_date <= CURRENT_DATE - INTERVAL '90 days')) AS is_available, 
+           d.last_donation_date 
          FROM users u
          LEFT JOIN donors d ON u.id = d.user_id
          WHERE u.mobile_number = $1`,
@@ -194,10 +196,13 @@ router.post('/profile-picture', verifyFirebaseToken, upload.single('profile_pict
 router.get('/donors', async (req, res) => {
   try {
     const donorsResult = await db.query(
-      `SELECT u.id, u.name, u.mobile_number, u.profile_picture, d.blood_group, d.is_available, d.last_donation_date 
+      `SELECT u.id, u.name, u.mobile_number, u.profile_picture, d.blood_group, 
+         (d.is_available AND (d.last_donation_date IS NULL OR d.last_donation_date <= CURRENT_DATE - INTERVAL '90 days')) AS is_available, 
+         d.last_donation_date 
        FROM users u
        JOIN donors d ON u.id = d.user_id
-       ORDER BY u.name ASC`
+       WHERE u.role = 'donor'
+       ORDER BY d.is_available DESC`
     );
     res.json(donorsResult.rows);
   } catch (err) {

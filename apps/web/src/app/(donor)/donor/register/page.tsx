@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, User, MapPin, Droplet } from "lucide-react";
+import { ArrowLeft, User, MapPin, Droplet, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +12,7 @@ export default function DonorRegister() {
     bloodGroup: "A+",
     latitude: null as number | null,
     longitude: null as number | null,
+    lastDonationDate: "",
   });
   
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,8 @@ export default function DonorRegister() {
           role: "donor",
           blood_group: formData.bloodGroup,
           latitude: formData.latitude,
-          longitude: formData.longitude
+          longitude: formData.longitude,
+          last_donation_date: formData.lastDonationDate || null
         })
       });
 
@@ -134,6 +136,20 @@ export default function DonorRegister() {
                   <option key={bg} value={bg} className="bg-neutral-900">{bg}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Last Donation Date (Optional)</label>
+            <div className="flex items-center bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-3 focus-within:border-red-500 transition-colors">
+              <Calendar className="w-5 h-5 text-gray-400 mr-3" />
+              <input 
+                type="date" 
+                value={formData.lastDonationDate}
+                onChange={e => setFormData({...formData, lastDonationDate: e.target.value})}
+                max={new Date().toISOString().split("T")[0]}
+                className="w-full bg-transparent text-white focus:outline-none text-lg [color-scheme:dark]" 
+              />
             </div>
           </div>
 
