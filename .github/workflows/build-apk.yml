@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
 
       - name: Install Dependencies
         run: |
@@ -28,10 +28,18 @@ jobs:
 
 
       - name: Build APK
+        id: build
         run: |
           cd apps/web/android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace > build-log.txt 2>&1
+          
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log.txt
+          path: apps/web/android/build-log.txt
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
