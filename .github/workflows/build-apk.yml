@@ -25,12 +25,7 @@ jobs:
           cd apps/web
           npm install
 
-      - name: Sync Capacitor
-        run: |
-          cd apps/web
-          mkdir -p out
-          echo "{}" > out/index.html
-          npx cap sync android
+
 
       - name: Build APK
         run: |
