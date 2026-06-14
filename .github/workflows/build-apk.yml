@@ -12,7 +12,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -55,6 +55,7 @@ jobs:
       - name: Build APK
         run: |
           cd apps/web/android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
