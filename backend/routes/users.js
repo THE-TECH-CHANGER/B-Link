@@ -189,5 +189,21 @@ router.post('/profile-picture', verifyFirebaseToken, upload.single('profile_pict
     res.status(500).json({ error: 'Server error updating profile picture.' });
   }
 });
+// @route   GET /api/users/donors
+// @desc    Get all registered donors (hospital view)
+router.get('/donors', async (req, res) => {
+  try {
+    const donorsResult = await db.query(
+      `SELECT u.id, u.name, u.mobile_number, u.profile_picture, d.blood_group, d.is_available, d.last_donation_date 
+       FROM users u
+       JOIN donors d ON u.id = d.user_id
+       ORDER BY u.name ASC`
+    );
+    res.json(donorsResult.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error fetching donors.' });
+  }
+});
 
 module.exports = router;

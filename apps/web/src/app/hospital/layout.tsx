@@ -12,11 +12,11 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   const navigation = [
-    { name: "Overview", href: "/", icon: LayoutDashboard },
-    { name: "Active Emergencies", href: "/emergencies", icon: BellRing },
-    { name: "Blood Inventory", href: "/inventory", icon: Droplet },
-    { name: "Donors", href: "/donors", icon: Users },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Overview", href: "/hospital", icon: LayoutDashboard },
+    { name: "Active Emergencies", href: "/hospital/emergencies", icon: BellRing },
+    { name: "Blood Inventory", href: "/hospital/inventory", icon: Droplet },
+    { name: "Donors", href: "/hospital/donors", icon: Users },
+    { name: "Settings", href: "/hospital/settings", icon: Settings },
   ];
 
   return (

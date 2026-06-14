@@ -21,11 +21,13 @@ app.use('/uploads', express.static('uploads'));
 const authRoutes = require('./routes/auth');
 const requestRoutes = require('./routes/requests');
 const userRoutes = require('./routes/users');
+const inventoryRoutes = require('./routes/inventory');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // Basic route to check if server is running
 app.get('/api/health', (req, res) => {

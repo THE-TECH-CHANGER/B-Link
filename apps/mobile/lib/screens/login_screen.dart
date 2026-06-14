@@ -171,6 +171,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: _isLoading ? const CircularProgressIndicator(color: Colors.black) : const Text('Verify & Login'),
                 ),
               ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _isLoading ? null : _sendOTP,
+                child: const Text('Resend OTP', style: TextStyle(color: Colors.grey)),
+              ),
             ],
           ],
         ),

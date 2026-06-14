@@ -5,12 +5,12 @@ import { getAuth } from 'firebase/auth';
 // 1. Go to Firebase Console -> Project Settings -> General
 // 2. Scroll down to "Your apps", select the Web app `</>`, and copy the firebaseConfig
 const firebaseConfig = {
-  apiKey: "AIzaSy_REPLACE_WITH_YOUR_API_KEY",
+  apiKey: "AIzaSyCQCgMQWBtINsUWHOmkvzcgjWOvr9wgFxQ",
   authDomain: "bloodlink-1166a.firebaseapp.com",
   projectId: "bloodlink-1166a",
-  storageBucket: "bloodlink-1166a.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  storageBucket: "bloodlink-1166a.firebasestorage.app",
+  messagingSenderId: "715658775952",
+  appId: "1:715658775952:web:bfba7f2124fa0506567715"
 };
 
 // Initialize Firebase only if it hasn't been initialized yet

@@ -83,7 +83,60 @@ router.get('/active', async (req, res) => {
     res.json(activeRequests.rows);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server error fetching requests.' });
+    res.status(500).json({ error: 'Server error fetching active requests.' });
+  }
+});
+
+// @route   GET /api/requests
+// @desc    Get all emergency requests (active and fulfilled)
+router.get('/', async (req, res) => {
+  try {
+    const allRequests = await db.query(
+      `SELECT r.*, u.name as requester_name 
+       FROM requests r 
+       JOIN users u ON r.requester_id = u.id 
+       ORDER BY r.created_at DESC`
+    );
+    res.json(allRequests.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error fetching all requests.' });
+  }
+});
+// @route   PUT /api/requests/:id/fulfill
+// @desc    Mark an emergency request as fulfilled
+router.put('/:id/fulfill', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Fetch request details first
+    const requestRes = await db.query('SELECT * FROM requests WHERE id = $1', [id]);
+    if (requestRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+    const reqData = requestRes.rows[0];
+
+    // Mark as fulfilled
+    const result = await db.query(
+      `UPDATE requests 
+       SET status = 'fulfilled' 
+       WHERE id = $1 
+       RETURNING *`,
+      [id]
+    );
+
+    // Deduct units from inventory (hospital_id is hardcoded to 1 for MVP)
+    await db.query(
+      `UPDATE inventory 
+       SET units = GREATEST(0, units - $1), last_updated = CURRENT_TIMESTAMP
+       WHERE hospital_id = 1 AND blood_group = $2`,
+      [reqData.units_required, reqData.blood_group]
+    );
+
+    res.json({ message: 'Request marked as fulfilled and inventory updated', request: result.rows[0] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error fulfilling request.' });
   }
 });
 

@@ -26,7 +26,7 @@ export default function LoginPage() {
       // Simulate network request
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      router.push("/");
+      router.push("/hospital");
     } catch (err: any) {
       setError(err.message);
     } finally {

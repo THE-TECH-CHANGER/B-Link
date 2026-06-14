@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 
@@ -23,6 +24,14 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
       return;
     }
 
+    if (FirebaseAuth.instance.currentUser == null) {
+      _showGuestOtpDialog();
+    } else {
+      _executeApiRequest();
+    }
+  }
+
+  Future<void> _executeApiRequest() async {
     setState(() => _isLoading = true);
 
     try {
@@ -92,6 +101,134 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
+  }
+
+  void _showGuestOtpDialog() {
+    final phoneController = TextEditingController();
+    final otpController = TextEditingController();
+    String? verificationId;
+    bool codeSent = false;
+    bool verifying = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final textColor = isDark ? Colors.white : Colors.black;
+
+            Future<void> sendOtp() async {
+              final phone = phoneController.text.trim();
+              if (phone.length < 10) return;
+              setDialogState(() => verifying = true);
+              
+              await FirebaseAuth.instance.verifyPhoneNumber(
+                phoneNumber: '+91$phone',
+                verificationCompleted: (PhoneAuthCredential credential) {},
+                verificationFailed: (FirebaseAuthException e) {
+                  setDialogState(() => verifying = false);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message ?? 'Verification failed')));
+                },
+                codeSent: (String vid, int? resendToken) {
+                  setDialogState(() {
+                    verificationId = vid;
+                    codeSent = true;
+                    verifying = false;
+                  });
+                },
+                codeAutoRetrievalTimeout: (String vid) {},
+              );
+            }
+
+            return AlertDialog(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              title: Text('Verify Phone Number', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('We need to verify your number to prevent fraudulent requests.', style: TextStyle(color: isDark ? Colors.white70 : Colors.black87)),
+                  const SizedBox(height: 16),
+                  if (!codeSent) ...[
+                    TextField(
+                      controller: phoneController,
+                      decoration: const InputDecoration(labelText: 'Mobile Number', prefixText: '+91 '),
+                      keyboardType: TextInputType.phone,
+                      style: TextStyle(color: textColor),
+                    ),
+                  ] else ...[
+                    TextField(
+                      controller: otpController,
+                      decoration: const InputDecoration(labelText: 'Enter 6-digit OTP'),
+                      keyboardType: TextInputType.number,
+                      style: TextStyle(color: textColor),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                if (codeSent)
+                  TextButton(
+                    onPressed: verifying ? null : sendOtp,
+                    child: Text('Resend OTP', style: TextStyle(color: AppTheme.textSecondary)),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed, foregroundColor: Colors.white),
+                  onPressed: verifying ? null : () async {
+                    if (!codeSent) {
+                      await sendOtp();
+                    } else {
+                      final otp = otpController.text.trim();
+                      if (otp.length < 6 || verificationId == null) return;
+                      setDialogState(() => verifying = true);
+
+                      try {
+                        PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                          verificationId: verificationId!,
+                          smsCode: otp,
+                        );
+                        final userCred = await FirebaseAuth.instance.signInWithCredential(credential);
+                        final idToken = await userCred.user?.getIdToken();
+
+                        if (idToken != null) {
+                          final phone = phoneController.text.trim();
+                          final loginRes = await ApiService.loginUser(idToken, phone);
+                          
+                          if (loginRes['requires_registration'] == true) {
+                            // Quick guest registration
+                            await ApiService.registerUser(
+                              firebaseIdToken: idToken,
+                              mobileNumber: phone,
+                              name: 'Guest Requester',
+                              role: 'patient',
+                              bloodGroup: _selectedBloodGroup!,
+                              latitude: 12.9716, // Default for MVP
+                              longitude: 77.5946,
+                            );
+                          }
+                          
+                          if (context.mounted) Navigator.pop(context); // Close OTP Dialog
+                          _executeApiRequest(); // Finally execute the request!
+                        }
+                      } catch (e) {
+                        setDialogState(() => verifying = false);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid OTP or Error: $e')));
+                      }
+                    }
+                  },
+                  child: Text(verifying ? 'Please wait...' : (!codeSent ? 'Send OTP' : 'Verify & Broadcast')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
