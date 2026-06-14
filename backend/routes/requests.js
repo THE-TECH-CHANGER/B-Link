@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
     // 3. The Smart Matching Engine (Geofencing using PostGIS ST_Distance)
     // Find active donors with matching blood group within 10km (10000 meters) of the hospital
     const matchedDonors = await db.query(
-      `SELECT u.id, u.name, u.mobile_number, 
+      `SELECT u.id, u.name, u.mobile_number, u.fcm_token,
               ST_Distance(u.location, $1) as distance_meters
        FROM users u
        JOIN donors d ON u.id = d.user_id
@@ -38,6 +38,23 @@ router.post('/', async (req, res) => {
        LIMIT 50`,
        [hospital.location, blood_group] // $1 is hospital location (GEOMETRY), $2 is blood group
     );
+
+    // 4. Trigger Firebase Cloud Messaging (FCM) Push Notifications for matched donors
+    const fcmTokens = matchedDonors.rows
+        .map(donor => donor.fcm_token)
+        .filter(token => token !== null && token !== undefined);
+
+    if (fcmTokens.length > 0) {
+      console.log(`Sending Emergency Push Notifications to ${fcmTokens.length} devices.`);
+      const { getMessaging } = require('firebase-admin/messaging');
+      await getMessaging().sendEachForMulticast({ 
+        tokens: fcmTokens, 
+        notification: { 
+          title: 'Emergency Blood Request', 
+          body: `${units_required} units of ${blood_group} needed at ${hospital.name}.` 
+        } 
+      });
+    }
 
     res.status(201).json({ 
       message: 'Emergency request broadcasted successfully.', 

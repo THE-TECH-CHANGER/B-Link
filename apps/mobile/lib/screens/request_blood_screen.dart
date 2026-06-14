@@ -42,27 +42,32 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
 
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: AppTheme.background,
-          title: Text('$count Nearby Donors Found!', style: const TextStyle(color: AppTheme.primaryRed)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('We instantly matched your request with nearby active donors using PostGIS geofencing:', style: TextStyle(color: Colors.white)),
-              const SizedBox(height: 16),
-              ...donors.take(3).map((d) => ListTile(
-                leading: const Icon(Icons.person, color: Colors.white54),
-                title: Text(d['name'], style: const TextStyle(color: Colors.white)),
-                subtitle: Text('Distance: ${(d['distance_meters'] / 1000).toStringAsFixed(1)} km', style: const TextStyle(color: Colors.white70)),
-              )),
-              if (count > 3) Text('...and ${count - 3} more', style: const TextStyle(color: Colors.white54))
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+        builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final textColor = isDark ? Colors.white : Colors.black;
+          final subtitleColor = isDark ? Colors.white70 : Colors.black87;
+
+          return AlertDialog(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            title: Text('$count Nearby Donors Found!', style: const TextStyle(color: AppTheme.primaryRed)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('We instantly matched your request with nearby active donors using PostGIS geofencing:', style: TextStyle(color: textColor)),
+                const SizedBox(height: 16),
+                ...donors.take(3).map((d) => ListTile(
+                  leading: Icon(Icons.person, color: isDark ? Colors.white54 : Colors.black54),
+                  title: Text(d['name'], style: TextStyle(color: textColor)),
+                  subtitle: Text('Distance: ${(d['distance_meters'] / 1000).toStringAsFixed(1)} km', style: TextStyle(color: subtitleColor)),
+                )),
+                if (count > 3) Text('...and ${count - 3} more', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54))
+              ],
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
+              ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryRed,
@@ -79,7 +84,8 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
               child: const Text('Send Alerts'),
             )
           ],
-        ),
+        );
+        },
       );
 
     } catch (e) {
@@ -90,22 +96,27 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Emergency Request'),
-        backgroundColor: AppTheme.darkRed, // Distinct red app bar for emergencies
+        backgroundColor: AppTheme.primaryRed, // Distinct red app bar for emergencies
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Request Blood',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: textColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -116,7 +127,7 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
             const SizedBox(height: 32),
             
             // Blood Group Selector
-            const Text('Required Blood Group', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text('Required Blood Group', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 12,
@@ -132,9 +143,11 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
                     });
                   },
                   selectedColor: AppTheme.primaryRed,
-                  backgroundColor: Colors.white10,
+                  backgroundColor: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white70,
+                    color: isSelected 
+                        ? Colors.white 
+                        : (isDark ? Colors.white70 : Colors.black87),
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -144,27 +157,30 @@ class _RequestBloodScreenState extends State<RequestBloodScreen> {
             const SizedBox(height: 32),
             
             // Units Required
-            const Text('Units Needed', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text('Units Needed', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             TextField(
               controller: _unitsController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(hintText: 'e.g., 2', hintStyle: TextStyle(color: Colors.white30)),
+              style: TextStyle(color: textColor),
+              decoration: InputDecoration(
+                hintText: 'e.g., 2', 
+                hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.black38)
+              ),
             ),
             
             const SizedBox(height: 32),
             
             // Target Hospital
-            const Text('Target Hospital', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text('Target Hospital', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            const TextField(
+            TextField(
               enabled: false,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 hintText: 'Apollo Hospital (Auto-detected)',
-                hintStyle: TextStyle(color: Colors.white70),
-                prefixIcon: Icon(Icons.local_hospital, color: Colors.white54),
+                hintStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                prefixIcon: Icon(Icons.local_hospital, color: isDark ? Colors.white54 : Colors.black54),
               ),
             ),
             

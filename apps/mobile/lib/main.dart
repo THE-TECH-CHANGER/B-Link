@@ -7,6 +7,8 @@ import 'screens/login_screen.dart';
 import 'screens/request_blood_screen.dart';
 import 'screens/dashboard_screen.dart';
 
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.dark);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -20,16 +22,23 @@ class BloodLinkApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'BloodLink',
-      theme: AppTheme.darkTheme,
-      debugShowCheckedModeBanner: false,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, currentMode, child) {
+        return MaterialApp(
+          title: 'BloodLink',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: currentMode,
+          debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
         '/': (context) => const LandingScreen(),
         '/login': (context) => const LoginScreen(),
         '/request': (context) => const RequestBloodScreen(),
         '/dashboard': (context) => const DashboardScreen(),
+      },
+    );
       },
     );
   }
