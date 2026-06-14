@@ -20,37 +20,15 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Install Capacitor
+      - name: Install Dependencies
         run: |
           cd apps/web
-          npm install @capacitor/core
-          npm install -D @capacitor/cli @capacitor/android
-          mkdir -p out
-          echo "{}" > out/index.html
-          npx cap init "B-Link" "com.thetechchanger.blink" --web-dir out
-          
-      - name: Configure Capacitor to use Live URL
+          npm install
+
+      - name: Sync Capacitor
         run: |
           cd apps/web
-          cat << 'EOF' > capacitor.config.ts
-          import { CapacitorConfig } from '@capacitor/cli';
-          const config: CapacitorConfig = {
-            appId: 'com.thetechchanger.blink',
-            appName: 'B-Link',
-            webDir: 'out',
-            bundledWebRuntime: false,
-            server: {
-              url: 'https://THE-TECH-CHANGER.github.io/B-Link',
-              cleartext: true
-            }
-          };
-          export default config;
-          EOF
-          
-      - name: Add Android Project
-        run: |
-          cd apps/web
-          npx cap add android
+          npx cap sync android
 
       - name: Build APK
         run: |
