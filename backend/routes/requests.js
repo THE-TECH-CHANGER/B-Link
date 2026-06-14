@@ -64,8 +64,8 @@ router.post('/', async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Server error processing request.' });
+    console.error(err);
+    res.status(500).json({ error: 'Server error processing request.', details: err.message, stack: err.stack });
   }
 });
 
