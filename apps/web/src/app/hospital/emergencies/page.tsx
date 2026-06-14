@@ -26,7 +26,7 @@ export default function EmergenciesPage() {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/requests");
+      const res = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/requests");
       if (res.ok) {
         const data = await res.json();
         setRequests(data);
@@ -40,7 +40,7 @@ export default function EmergenciesPage() {
 
   const handleFulfill = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/requests/${id}/fulfill`, { method: "PUT" });
+      const res = await fetch(`https://bloodlink-backend-vn4k.onrender.com/api/requests/${id}/fulfill`, { method: "PUT" });
       if (res.ok) {
         setRequests(requests.map(req => req.id === id ? { ...req, status: 'fulfilled' } : req));
       }

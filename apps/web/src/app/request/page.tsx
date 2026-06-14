@@ -75,7 +75,7 @@ export default function GuestRequestBlood() {
       const idToken = await result.user.getIdToken();
       
       // 1. Authenticate / Auto-register as Guest Patient
-      const loginRes = await fetch("http://localhost:5000/api/auth/login", {
+      const loginRes = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/auth/login", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -89,7 +89,7 @@ export default function GuestRequestBlood() {
         // login succeeded, user exists
       } else if (loginRes.status === 404) {
         // Needs registration
-        await fetch("http://localhost:5000/api/auth/register", {
+        await fetch("https://bloodlink-backend-vn4k.onrender.com/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -105,7 +105,7 @@ export default function GuestRequestBlood() {
       }
 
       // 2. Submit the emergency request
-      const reqRes = await fetch("http://localhost:5000/api/requests", {
+      const reqRes = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/requests", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

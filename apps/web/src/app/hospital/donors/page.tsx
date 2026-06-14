@@ -24,7 +24,7 @@ export default function DonorsPage() {
 
   const fetchDonors = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users/donors");
+      const res = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/users/donors");
       if (res.ok) {
         const data = await res.json();
         setDonors(data);
@@ -78,7 +78,7 @@ export default function DonorsPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-white/10 border-2 border-white/5 flex items-center justify-center overflow-hidden">
                     {donor.profile_picture ? (
-                      <img src={`http://localhost:5000${donor.profile_picture}`} alt={donor.name} className="w-full h-full object-cover" />
+                      <img src={`https://bloodlink-backend-vn4k.onrender.com${donor.profile_picture}`} alt={donor.name} className="w-full h-full object-cover" />
                     ) : (
                       <Users className="w-6 h-6 text-white/50" />
                     )}

@@ -28,7 +28,7 @@ export default function DashboardOverview() {
     // Fetch active requests from our Node.js backend
     const fetchRequests = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/requests/active");
+        const res = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/requests/active");
         if (res.ok) {
           const data = await res.json();
           setRequests(data);
@@ -48,7 +48,7 @@ export default function DashboardOverview() {
 
   const handleFulfill = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/requests/${id}/fulfill`, {
+      const res = await fetch(`https://bloodlink-backend-vn4k.onrender.com/api/requests/${id}/fulfill`, {
         method: "PUT",
       });
       if (res.ok) {
@@ -63,7 +63,7 @@ export default function DashboardOverview() {
     e.preventDefault();
     setIsBroadcasting(true);
     try {
-      const res = await fetch("http://localhost:5000/api/requests", {
+      const res = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

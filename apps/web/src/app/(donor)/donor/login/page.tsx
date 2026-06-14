@@ -56,7 +56,7 @@ export default function DonorLogin() {
       const result = await confirmationResult.confirm(otp);
       const idToken = await result.user.getIdToken();
       
-      const loginRes = await fetch("http://localhost:5000/api/auth/login", {
+      const loginRes = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/auth/login", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

@@ -22,7 +22,7 @@ export default function InventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/inventory");
+      const res = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/inventory");
       if (res.ok) {
         const data: InventoryItem[] = await res.json();
         const invMap: Record<string, number> = {};
@@ -50,7 +50,7 @@ export default function InventoryPage() {
     setSaving(bg);
 
     try {
-      await fetch("http://localhost:5000/api/inventory", {
+      await fetch("https://bloodlink-backend-vn4k.onrender.com/api/inventory", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ blood_group: bg, units: newUnits })

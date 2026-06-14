@@ -19,7 +19,7 @@ export default function DonorDashboard() {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/api/users/profile", {
+        const res = await fetch("https://bloodlink-backend-vn4k.onrender.com/api/users/profile", {
           headers: {
             "Authorization": `Bearer ${token}`
           }
