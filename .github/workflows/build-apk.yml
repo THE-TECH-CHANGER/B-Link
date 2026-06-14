@@ -1,0 +1,62 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Capacitor
+        run: |
+          cd apps/web
+          npm install @capacitor/core
+          npm install -D @capacitor/cli @capacitor/android
+          npx cap init "B-Link" "com.thetechchanger.blink" --web-dir out
+          
+      - name: Configure Capacitor to use Live URL
+        run: |
+          cd apps/web
+          cat << 'EOF' > capacitor.config.ts
+          import { CapacitorConfig } from '@capacitor/cli';
+          const config: CapacitorConfig = {
+            appId: 'com.thetechchanger.blink',
+            appName: 'B-Link',
+            webDir: 'out',
+            bundledWebRuntime: false,
+            server: {
+              url: 'https://THE-TECH-CHANGER.github.io/B-Link',
+              cleartext: true
+            }
+          };
+          export default config;
+          EOF
+          
+      - name: Add Android Project
+        run: |
+          cd apps/web
+          npx cap add android
+
+      - name: Build APK
+        run: |
+          cd apps/web/android
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug.apk
+          path: apps/web/android/app/build/outputs/apk/debug/app-debug.apk
